@@ -45,7 +45,7 @@ if (backToTop) {
 
 
 // Keep recognizable labels visible if a third-party brand logo CDN is unavailable.
-document.querySelectorAll<HTMLAnchorElement>('.tool-logo[data-mark] img').forEach((img) => {
+document.querySelectorAll<HTMLImageElement>('.tool-logo[data-mark] img').forEach((img) => {
   const parent = img.closest<HTMLAnchorElement>('.tool-logo');
   const mark = () => parent?.classList.add('icon-fallback');
   img.addEventListener('error', mark, { once: true });
