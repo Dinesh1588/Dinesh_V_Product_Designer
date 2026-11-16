@@ -502,3 +502,132 @@ body {
 @media(prefers-reduced-motion:reduce) {
   .tool-logo { transition:none!important; }
 }
+
+
+/* Final correction: portrait stages must size to the image, never crop it. */
+.hero-visual {
+  height:clamp(560px,76svh,760px);
+  min-height:0;
+  overflow:visible!important;
+}
+.hero-photo {
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  display:flex!important;
+  align-items:flex-end!important;
+  justify-content:center!important;
+  overflow:visible!important;
+  transform:none!important;
+}
+.hero-photo img {
+  display:block!important;
+  width:auto!important;
+  height:auto!important;
+  max-width:min(100%,560px)!important;
+  max-height:100%!important;
+  object-fit:contain!important;
+  object-position:center bottom!important;
+  margin-inline:auto!important;
+  transform:none!important;
+  filter:drop-shadow(0 22px 34px rgba(0,0,0,.16));
+}
+.about-portrait {
+  position:relative;
+  width:100%;
+  height:auto!important;
+  min-height:560px;
+  max-height:none!important;
+  padding:24px 18px 0;
+  display:flex!important;
+  align-items:flex-end!important;
+  justify-content:center!important;
+  overflow:visible!important;
+  border-radius:26px;
+  background:
+    radial-gradient(ellipse at 50% 42%,color-mix(in srgb,var(--orange-400) 13%,var(--surface-2)),transparent 68%),
+    linear-gradient(155deg,var(--surface),color-mix(in srgb,var(--surface-2) 72%,var(--surface)));
+}
+.about-portrait img {
+  position:relative!important;
+  display:block!important;
+  width:auto!important;
+  height:auto!important;
+  max-width:100%!important;
+  max-height:620px!important;
+  object-fit:contain!important;
+  object-position:center bottom!important;
+  margin-inline:auto!important;
+  transform:none!important;
+  -webkit-mask:none!important;
+  mask:none!important;
+  clip-path:none!important;
+  filter:drop-shadow(0 20px 32px rgba(0,0,0,.16));
+}
+.about-portrait:after { pointer-events:none; }
+.toolkit-inner {
+  width:min(100%,1080px)!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  text-align:center!important;
+  margin-inline:auto!important;
+}
+.toolkit-inner>div:first-child {
+  width:100%!important;
+  max-width:720px!important;
+  align-items:center!important;
+  text-align:center!important;
+}
+.toolkit-inner .eyebrow,
+.toolkit-inner h2,
+.toolkit-note { text-align:center!important;margin-inline:auto!important; }
+.tool-logo-grid {
+  width:100%!important;
+  max-width:1000px!important;
+  display:grid!important;
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
+  gap:16px!important;
+  margin:8px auto 0!important;
+  justify-content:center!important;
+  justify-items:stretch!important;
+}
+.tool-logo {
+  width:100%!important;
+  min-width:0!important;
+  min-height:126px!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:12px!important;
+  text-align:center!important;
+  border:1px solid var(--mac-line)!important;
+  border-radius:20px!important;
+  background:var(--mac-glass)!important;
+  box-shadow:0 8px 26px rgba(0,0,0,.045);
+}
+.tool-logo img { width:34px!important;height:34px!important;object-fit:contain!important; }
+.tool-logo span { width:100%;text-align:center!important; }
+.tool-logo-ai { border-color:color-mix(in srgb,var(--orange-500) 40%,var(--mac-line))!important; }
+.tool-logo-ai img { filter:drop-shadow(0 3px 8px color-mix(in srgb,var(--orange-500) 20%,transparent)); }
+@media(max-width:980px) {
+  .hero-visual { height:clamp(500px,68svh,620px); }
+  .about-portrait { min-height:500px; }
+  .about-portrait img { max-height:540px!important; }
+  .tool-logo-grid { grid-template-columns:repeat(4,minmax(0,1fr))!important; }
+  .tool-logo-grid .tool-logo:nth-last-child(2) { grid-column:2; }
+  .tool-logo-grid .tool-logo:last-child { grid-column:3; }
+}
+@media(max-width:620px) {
+  .hero-visual { height:500px;min-height:0; }
+  .hero-photo img { max-width:100%!important;max-height:100%!important; }
+  .about-portrait { width:100%!important;min-height:0;height:auto!important;padding:18px 10px 0;overflow:visible!important; }
+  .about-portrait img { width:auto!important;max-width:100%!important;max-height:520px!important; }
+  .toolkit-inner { gap:24px!important; }
+  .tool-logo-grid { grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important; }
+  .tool-logo-grid .tool-logo:nth-last-child(2),
+  .tool-logo-grid .tool-logo:last-child { grid-column:auto; }
+  .tool-logo { min-height:108px!important;border-radius:16px!important; }
+}
