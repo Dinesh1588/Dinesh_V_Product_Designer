@@ -11,7 +11,7 @@ export function initTheme() {
     button.classList.toggle('is-on', light);
     button.setAttribute('aria-pressed', String(light));
     button.setAttribute('aria-label', light ? 'Switch to dark theme' : 'Switch to light theme');
-    button.title = light ? 'Light theme is on — switch to dark' : 'Dark theme is on — switch to light';
+    button.title = light ? 'Light theme ON — switch OFF for dark mode' : 'Dark theme OFF — switch ON for light mode';
     document.querySelector('meta[name="theme-color"]')?.setAttribute('content', light ? '#f7f6f2' : '#0b0b0d');
   };
 
