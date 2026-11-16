@@ -6,12 +6,14 @@ import './styles/components.css';
 import './styles/animations.css';
 import './styles/responsive.css';
 import { initTheme } from './components/theme';
+import { initSound } from './components/sound';
 import { initNavigation } from './components/navigation';
 import { initCursor } from './components/cursor';
 import { initMagnetic } from './components/magnetic';
 import { initMotion } from './animations/gsap';
 import { createHeroScene } from './three/heroScene';
 
+initSound();
 initTheme();
 initNavigation();
 initCursor();
