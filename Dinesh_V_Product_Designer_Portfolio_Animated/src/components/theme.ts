@@ -24,7 +24,7 @@ export function initTheme() {
     void document.body.offsetWidth;
     document.body.classList.add('theme-shift');
     window.setTimeout(() => document.body.classList.remove('theme-shift'), 520);
-    playSound('theme', next === 'light' ? 'up' : 'down');
+    playSound('theme');
     update();
   });
 }
