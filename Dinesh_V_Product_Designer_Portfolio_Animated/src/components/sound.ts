@@ -67,6 +67,12 @@ function play(kind: SoundName) {
 }
 
 export function playSound(kind: SoundName) {
+  if (kind === 'theme') {
+    const ctx = getAudio();
+    if (!ctx) return;
+    void ctx.resume().then(() => play(kind)).catch(() => undefined);
+    return;
+  }
   play(kind);
 }
 
