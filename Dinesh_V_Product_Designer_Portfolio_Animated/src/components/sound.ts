@@ -46,7 +46,7 @@ function noiseTap(ctx: AudioContext, start: number, duration: number, volume: nu
 }
 
 function play(kind: SoundName) {
-  if (!enabled) return;
+  if (!enabled && kind !== 'theme') return;
   const ctx = getAudio();
   if (!ctx || ctx.state !== 'running') return;
   const now = ctx.currentTime;
