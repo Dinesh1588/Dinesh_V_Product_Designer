@@ -9,3 +9,5 @@
 @media(prefers-reduced-motion:reduce){.ember-field{display:none}.ember{animation:none!important}}
 
 @media(max-width:620px){.nav{gap:8px}.brand{gap:8px}.brand-mark{width:32px;height:32px}.brand-name{font-size:11px}.brand-name em{font-size:9px}}
+
+@media(max-width:620px){.hero-kicker-wrap{max-width:100%;overflow:visible}.product-wordmark{letter-spacing:-.07em}}
