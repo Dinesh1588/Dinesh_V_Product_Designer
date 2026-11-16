@@ -5,6 +5,7 @@ import './styles/layout.css';
 import './styles/components.css';
 import './styles/animations.css';
 import './styles/responsive.css';
+import './styles/macos.css';
 import { initTheme } from './components/theme';
 import { initSound } from './components/sound';
 import { initNavigation } from './components/navigation';
