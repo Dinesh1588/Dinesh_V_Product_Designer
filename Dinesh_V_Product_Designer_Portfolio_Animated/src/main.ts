@@ -37,6 +37,15 @@ import { optionalAnimationAssets } from './animations/optionalAssets';
 void optionalAnimationAssets;
 
 
+const pageProgress = document.querySelector<HTMLElement>('#pageProgress');
+const updatePageProgress = () => {
+  if (!pageProgress) return;
+  const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+  pageProgress.style.transform = `scaleX(${maxScroll > 0 ? window.scrollY / maxScroll : 0})`;
+};
+window.addEventListener('scroll', updatePageProgress, { passive: true });
+updatePageProgress();
+
 // Floating back-to-top control: appears after the visitor moves down the page.
 const backToTop = document.querySelector<HTMLButtonElement>('#backToTop');
 if (backToTop) {
