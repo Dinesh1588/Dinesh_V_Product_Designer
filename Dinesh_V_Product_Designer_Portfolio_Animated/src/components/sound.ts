@@ -10,37 +10,60 @@ function getAudio(): AudioContext | null {
   return audio;
 }
 
-function note(ctx: AudioContext, hz: number, duration: number, delay = 0, wave: OscillatorType = 'sine', volume = .035, to?: number) {
-  const start = ctx.currentTime + delay;
-  const osc = ctx.createOscillator();
+function tone(ctx: AudioContext, frequency: number, duration: number, startDelay = 0, type: OscillatorType = 'sine', peak = .045, endFrequency?: number) {
+  const start = ctx.currentTime + startDelay;
+  const oscillator = ctx.createOscillator();
+  const amp = ctx.createGain();
+  oscillator.type = type;
+  oscillator.frequency.setValueAtTime(frequency, start);
+  if (endFrequency) oscillator.frequency.exponentialRampToValueAtTime(endFrequency, start + duration);
+  amp.gain.setValueAtTime(.0001, start);
+  amp.gain.exponentialRampToValueAtTime(peak, start + .012);
+  amp.gain.exponentialRampToValueAtTime(.0001, start + duration);
+  oscillator.connect(amp);
+  amp.connect(ctx.destination);
+  oscillator.start(start);
+  oscillator.stop(start + duration + .03);
+}
+
+function noiseTap(ctx: AudioContext, start: number, duration: number, volume: number) {
+  const buffer = ctx.createBuffer(1, Math.floor(ctx.sampleRate * duration), ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / data.length);
+  const source = ctx.createBufferSource();
+  const filter = ctx.createBiquadFilter();
   const gain = ctx.createGain();
-  osc.type = wave;
-  osc.frequency.setValueAtTime(hz, start);
-  if (to) osc.frequency.exponentialRampToValueAtTime(to, start + duration);
-  gain.gain.setValueAtTime(.0001, start);
-  gain.gain.exponentialRampToValueAtTime(volume, start + .015);
+  source.buffer = buffer;
+  filter.type = 'highpass';
+  filter.frequency.value = 900;
+  gain.gain.setValueAtTime(volume, start);
   gain.gain.exponentialRampToValueAtTime(.0001, start + duration);
-  osc.connect(gain);
+  source.connect(filter);
+  filter.connect(gain);
   gain.connect(ctx.destination);
-  osc.start(start);
-  osc.stop(start + duration + .025);
+  source.start(start);
+  source.stop(start + duration);
 }
 
 function play(kind: SoundName) {
   if (!enabled) return;
   const ctx = getAudio();
   if (!ctx || ctx.state !== 'running') return;
-  if (kind === 'hover') note(ctx, 720, .045, 0, 'sine', .018, 880);
+  const now = ctx.currentTime;
+  if (kind === 'hover') tone(ctx, 740, .055, 0, 'sine', .014, 990);
   if (kind === 'click') {
-    note(ctx, 510, .075, 0, 'triangle', .035, 390);
-    note(ctx, 760, .09, .035, 'sine', .025, 620);
+    noiseTap(ctx, now, .045, .035);
+    tone(ctx, 185, .12, 0, 'sine', .05, 105);
+    tone(ctx, 620, .12, .018, 'triangle', .035, 390);
+    tone(ctx, 930, .09, .045, 'sine', .018, 700);
   }
   if (kind === 'navigate') {
-    note(ctx, 440, .11, 0, 'sine', .03, 660);
-    note(ctx, 660, .14, .075, 'sine', .024, 880);
+    tone(ctx, 392, .13, 0, 'sine', .035, 587);
+    tone(ctx, 587, .16, .07, 'sine', .03, 784);
+    tone(ctx, 784, .19, .13, 'sine', .025, 988);
   }
-  if (kind === 'project') [440, 554, 659, 880].forEach((hz, i) => note(ctx, hz, .16, i * .05, 'sine', .025));
-  if (kind === 'theme') [523.25, 659.25, 783.99].forEach((hz, i) => note(ctx, hz, .22, i * .07, 'sine', .035));
+  if (kind === 'project') [392, 494, 587, 784, 988].forEach((hz, i) => tone(ctx, hz, .2, i * .045, 'triangle', .022));
+  if (kind === 'theme') [523.25, 659.25, 783.99].forEach((hz, i) => tone(ctx, hz, .2, i * .065, 'sine', .03));
 }
 
 export function playSound(kind: SoundName) {
@@ -57,27 +80,32 @@ export function initSound() {
     button.setAttribute('aria-label', enabled ? 'Turn sound effects off' : 'Turn sound effects on');
     button.title = enabled ? 'Sound effects on' : 'Sound effects off';
     button.classList.toggle('is-on', enabled);
-    const label = button.querySelector<HTMLElement>('.sound-label');
-    if (label) label.textContent = enabled ? 'SOUND ON' : 'SOUND OFF';
+    button.dataset.state = enabled ? 'on' : 'off';
   };
 
   render();
   button.addEventListener('click', async () => {
-    enabled = !enabled;
-    localStorage.setItem('dinesh-sound', enabled ? 'on' : 'off');
-    if (enabled) {
-      const ctx = getAudio();
-      if (ctx) {
-        try {
-          await ctx.resume();
-          [587.33, 739.99, 880].forEach((hz, i) => note(ctx, hz, .28, i * .09, 'sine', .055));
-        } catch {
-          enabled = false;
-          localStorage.setItem('dinesh-sound', 'off');
-        }
-      } else {
+    const next = !enabled;
+    const ctx = getAudio();
+    if (next && ctx) {
+      try {
+        await ctx.resume();
+        enabled = true;
+        localStorage.setItem('dinesh-sound', 'on');
+        // A tactile switch click followed by a short, bright ascending power-up chord.
+        noiseTap(ctx, ctx.currentTime, .055, .055);
+        tone(ctx, 165, .18, 0, 'sine', .07, 82);
+        [523.25, 659.25, 783.99, 1046.5].forEach((hz, i) => tone(ctx, hz, .26, .045 + i * .055, 'sine', .045));
+      } catch {
         enabled = false;
         localStorage.setItem('dinesh-sound', 'off');
+      }
+    } else {
+      enabled = false;
+      localStorage.setItem('dinesh-sound', 'off');
+      if (ctx?.state === 'running') {
+        noiseTap(ctx, ctx.currentTime, .04, .035);
+        tone(ctx, 440, .12, 0, 'sine', .035, 220);
       }
     }
     render();
@@ -88,7 +116,7 @@ export function initSound() {
     const item = event.target.closest('a,button,summary');
     if (!item || item === button) return;
     const now = performance.now();
-    if (now - hoverAt < 140) return;
+    if (now - hoverAt < 150) return;
     hoverAt = now;
     play('hover');
   }, { passive: true });
