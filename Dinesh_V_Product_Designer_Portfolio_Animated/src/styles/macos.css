@@ -631,3 +631,23 @@ body {
   .tool-logo-grid .tool-logo:last-child { grid-column:auto; }
   .tool-logo { min-height:108px!important;border-radius:16px!important; }
 }
+
+/* Performance pass: lightweight CSS motion replaces continuous JS/WebGL loops. */
+.reveal { opacity: 0; transform: translate3d(0, 18px, 0); transition: opacity .55s ease, transform .55s cubic-bezier(.2,.7,.2,1); }
+.reveal.is-visible { opacity: 1; transform: none; }
+.hero-title #rotatingPhrase { transition: opacity .18s ease, transform .18s ease; }
+.hero-title #rotatingPhrase.phrase-out { opacity: 0; transform: translateY(8px); }
+.process-line-fill { transition: transform 1s cubic-bezier(.2,.7,.2,1); }
+.process-line-fill.is-filled { transform: scaleX(1); }
+.three-hero { pointer-events: none; background: radial-gradient(circle at 50% 45%, color-mix(in srgb,var(--orange-400) 8%,transparent), transparent 62%); }
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
+  .hero-title #rotatingPhrase { transition: none; }
+}
+@media (max-width: 700px) {
+  .nav, .mobile-nav, .hero-chip, .sound-control, .code-window {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .ember-field { display: none; }
+}
