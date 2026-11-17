@@ -1,19 +1,30 @@
+import { playSound } from './sound';
+
 export function initTheme() {
   const root = document.documentElement;
   const button = document.querySelector<HTMLButtonElement>('#themeToggle');
-  const saved = localStorage.getItem('dinesh-theme');
-  root.dataset.theme = saved === 'light' ? 'light' : 'dark';
+  root.dataset.theme = localStorage.getItem('dinesh-theme') === 'light' ? 'light' : 'dark';
+
   const update = () => {
     const light = root.dataset.theme === 'light';
-    if (button) {
-      button.setAttribute('aria-label', light ? 'Switch to dark mode' : 'Switch to light mode');
-      button.innerHTML = light ? '<span>☾</span>' : '<span>☼</span>';
-    }
+    if (!button) return;
+    button.classList.toggle('is-on', light);
+    button.setAttribute('aria-pressed', String(light));
+    button.setAttribute('aria-label', light ? 'Switch to dark theme' : 'Switch to light theme');
+    button.title = light ? 'Light theme ON — switch OFF for dark mode' : 'Dark theme OFF — switch ON for light mode';
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', light ? '#f7f6f2' : '#0b0b0d');
   };
+
   update();
   button?.addEventListener('click', () => {
-    root.dataset.theme = root.dataset.theme === 'light' ? 'dark' : 'light';
-    localStorage.setItem('dinesh-theme', root.dataset.theme);
+    const next = root.dataset.theme === 'light' ? 'dark' : 'light';
+    root.dataset.theme = next;
+    localStorage.setItem('dinesh-theme', next);
+    document.body.classList.remove('theme-shift');
+    void document.body.offsetWidth;
+    document.body.classList.add('theme-shift');
+    window.setTimeout(() => document.body.classList.remove('theme-shift'), 520);
+    playSound('theme');
     update();
   });
 }
