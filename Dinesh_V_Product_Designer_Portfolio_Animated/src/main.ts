@@ -9,73 +9,88 @@ import './styles/macos.css';
 import { initTheme } from './components/theme';
 import { initSound } from './components/sound';
 import { initNavigation } from './components/navigation';
-import { initCursor } from './components/cursor';
-import { initMagnetic } from './components/magnetic';
-import { initMotion } from './animations/gsap';
-import { createHeroScene } from './three/heroScene';
 
 initSound();
 initTheme();
 initNavigation();
-initCursor();
-initMagnetic();
-initMotion();
 
-const hero = document.querySelector<HTMLElement>('#threeHero');
-if (hero && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) createHeroScene(hero);
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-document.querySelectorAll<HTMLAnchorElement>('a[href^="#"]').forEach((a) => {
-  a.addEventListener('click', (event) => {
-    const target = document.querySelector(a.getAttribute('href') || '');
+// Reveal sections only as they approach the viewport; no per-frame animation loop.
+const revealItems = document.querySelectorAll<HTMLElement>('.reveal');
+if ('IntersectionObserver' in window && !reduceMotion) {
+  const revealObserver = new IntersectionObserver((entries, observer) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      entry.target.classList.add('is-visible');
+      observer.unobserve(entry.target);
+    });
+  }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
+  revealItems.forEach((item) => revealObserver.observe(item));
+} else {
+  revealItems.forEach((item) => item.classList.add('is-visible'));
+}
+
+// Keep the headline phrase changing without a heavyweight animation library.
+const phrase = document.querySelector<HTMLElement>('#rotatingPhrase');
+if (phrase && !reduceMotion) {
+  const phrases = ['for the real world.', 'for real people.', 'for complex systems.', 'for products that scale.', 'for everyday impact.'];
+  let index = 0;
+  window.setInterval(() => {
+    if (document.hidden) return;
+    phrase.classList.add('phrase-out');
+    window.setTimeout(() => {
+      index = (index + 1) % phrases.length;
+      phrase.textContent = phrases[index];
+      phrase.classList.remove('phrase-out');
+    }, 180);
+  }, 4200);
+}
+
+// Animate the process line only when the process section is visible.
+const processLine = document.querySelector<HTMLElement>('.process-line-fill');
+const processTrack = document.querySelector<HTMLElement>('.process-track');
+if (processLine && processTrack && 'IntersectionObserver' in window && !reduceMotion) {
+  const processObserver = new IntersectionObserver(([entry], observer) => {
+    if (!entry.isIntersecting) return;
+    processLine.classList.add('is-filled');
+    observer.disconnect();
+  }, { threshold: 0.25 });
+  processObserver.observe(processTrack);
+}
+
+document.querySelectorAll<HTMLAnchorElement>('a[href^="#"]').forEach((anchor) => {
+  anchor.addEventListener('click', (event) => {
+    const href = anchor.getAttribute('href');
+    if (!href || href === '#') return;
+    const target = document.querySelector<HTMLElement>(href);
     if (!target) return;
     event.preventDefault();
-    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
   });
 });
 
-import { optionalAnimationAssets } from './animations/optionalAssets';
-void optionalAnimationAssets;
-
-
 const pageProgress = document.querySelector<HTMLElement>('#pageProgress');
-const updatePageProgress = () => {
-  if (!pageProgress) return;
-  const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-  pageProgress.style.transform = `scaleX(${maxScroll > 0 ? window.scrollY / maxScroll : 0})`;
-};
-window.addEventListener('scroll', updatePageProgress, { passive: true });
-updatePageProgress();
-
-// Floating back-to-top control: appears after the visitor moves down the page.
 const backToTop = document.querySelector<HTMLButtonElement>('#backToTop');
-if (backToTop) {
-  const updateBackToTop = () => backToTop.classList.toggle('is-visible', window.scrollY > 520);
-  window.addEventListener('scroll', updateBackToTop, { passive: true });
-  updateBackToTop();
-  backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }));
-}
+let scrollQueued = false;
+const updateScrollUI = () => {
+  if (scrollQueued) return;
+  scrollQueued = true;
+  window.requestAnimationFrame(() => {
+    scrollQueued = false;
+    const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+    if (pageProgress) pageProgress.style.transform = `scaleX(${maxScroll > 0 ? window.scrollY / maxScroll : 0})`;
+    if (backToTop) backToTop.classList.toggle('is-visible', window.scrollY > 520);
+  });
+};
+window.addEventListener('scroll', updateScrollUI, { passive: true });
+updateScrollUI();
+backToTop?.addEventListener('click', () => window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' }));
 
-
-// Keep recognizable labels visible if a third-party brand logo CDN is unavailable.
+// Keep tool labels visible when an external logo host is unavailable.
 document.querySelectorAll<HTMLImageElement>('.tool-logo[data-mark] img').forEach((img) => {
   const parent = img.closest<HTMLAnchorElement>('.tool-logo');
   const mark = () => parent?.classList.add('icon-fallback');
   img.addEventListener('error', mark, { once: true });
   if (img.complete && img.naturalWidth === 0) mark();
 });
-
-
-// Minimal ambient orange embers, intentionally sparse and disabled for reduced-motion users.
-const emberField = document.querySelector<HTMLElement>('#emberField');
-if (emberField && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-  for (let i = 0; i < 18; i += 1) {
-    const ember = document.createElement('span');
-    ember.className = 'ember';
-    ember.style.left = `${(i * 37 + 11) % 100}%`;
-    ember.style.top = `${70 + ((i * 19) % 45)}%`;
-    ember.style.setProperty('--duration', `${10 + (i % 7) * 1.7}s`);
-    ember.style.setProperty('--delay', `${-(i % 11) * 1.4}s`);
-    ember.style.setProperty('--drift', `${(i % 2 ? 1 : -1) * (12 + (i % 5) * 9)}px`);
-    emberField.appendChild(ember);
-  }
-}
